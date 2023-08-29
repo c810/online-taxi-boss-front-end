@@ -5,6 +5,7 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
+import ResetPassword from '@/views/login/ResetPassword'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -51,9 +52,11 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: '首页', icon: 'dashboard' }
+      meta: { title: '首页', icon: 'dashboard', affix: true }
     }]
-  }
+  },
+
+  { path: '/login', name: 'ResetPassword', component: ResetPassword }
 ]
 
 /**
@@ -61,6 +64,8 @@ export const constantRoutes = [
  * the routes that need to be dynamically loaded based on user roles
  */
 export const asyncRoutes = [
+
+  // TODO: 下面大括号中内容待删除
   {
     path: '/system',
     alwaysShow: true,

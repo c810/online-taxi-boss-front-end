@@ -1,5 +1,5 @@
-import { login, logout, getInfo } from '@/api/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import { logout, getInfoApi, loginApi } from '@/api/user'
+import { getToken, setToken, removeToken, setUserId, setUserType, getUserId, getUserType, clearSession } from '@/utils/auth'
 import { resetRouter } from '@/router'
 
 const getDefaultState = () => {
@@ -32,14 +32,21 @@ const mutations = {
 }
 
 const actions = {
-  // user login
+  // user login 登录
   login({ commit }, userInfo) {
-    const { username, password } = userInfo
+    // 解构传来的参数
+    const { username, password, userType } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
+      // 调用 api -> user.js -> loginApi()
+      loginApi({ username: username.trim(), password: password, userType: userType }).then(response => {
         const { data } = response
+        console.log(response)
+        // commit('SET_TOKEN', 'admin-token')
         commit('SET_TOKEN', data.token)
+        // 设置用户id
+        setUserId(data.userId)
         setToken(data.token)
+        setUserType(data.userType)
         resolve()
       }).catch(error => {
         reject(error)
@@ -47,12 +54,17 @@ const actions = {
     })
   },
 
-  // get user info
+  // get user info 获取用户的权限信息
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
+      const para = {
+        userId: getUserId(),
+        userType: getUserType()
+      }
+      // 对接自己的接口
+      getInfoApi(para).then(response => {
         const { data } = response
-
+        console.log(data)
         if (!data) {
           reject('Verification failed, please Login again.')
         }
@@ -63,10 +75,11 @@ const actions = {
         if (!roles || roles.length <= 0) {
           reject('getInfo: roles must be a non-null array!')
         }
-
+        // 把返回的信息存放到vuex里面
         commit('SET_ROLES', roles)
         commit('SET_NAME', name)
         commit('SET_AVATAR', avatar)
+        // commit('SET_AVATAR', require('@/assets/images/user-logo.jpg'))
         resolve(data)
       }).catch(error => {
         reject(error)
@@ -75,12 +88,27 @@ const actions = {
   },
 
   // user logout
-  logout({ commit, state }) {
+  /* logout({ commit, state }) {
     return new Promise((resolve, reject) => {
       logout(state.token).then(() => {
         removeToken() // must remove  token  first
         resetRouter()
         commit('RESET_STATE')
+        resolve()
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  }, */
+  logout({ commit, state, dispatch }) {
+    return new Promise((resolve, reject) => {
+      logout(state.token).then(() => {
+        removeToken() // must remove  token  first
+        resetRouter()
+        commit('RESET_STATE')
+        // 清空tagsview里面的数据
+        dispatch('tagsView/delAllViews', {}, { root: true })
+        clearSession()
         resolve()
       }).catch(error => {
         reject(error)

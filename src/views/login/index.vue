@@ -1,237 +1,373 @@
 <template>
   <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
+    <div class="logo">
+      <a class="sdu-logo" href="javascript:" />
+      <span class="line" />
+      <span class="title">网约车后台管理系统</span>
+    </div>
+    <div class="main-box">
 
-      <div class="title-container">
-        <h3 class="title">Login Form</h3>
-      </div>
-
-      <el-form-item prop="username">
-        <span class="svg-container">
-          <svg-icon icon-class="user" />
-        </span>
-        <el-input
-          ref="username"
-          v-model="loginForm.username"
-          placeholder="Username"
-          name="username"
-          type="text"
-          tabindex="1"
-          auto-complete="on"
-        />
-      </el-form-item>
-
-      <el-form-item prop="password">
-        <span class="svg-container">
-          <svg-icon icon-class="password" />
-        </span>
-        <el-input
-          :key="passwordType"
-          ref="password"
-          v-model="loginForm.password"
-          :type="passwordType"
-          placeholder="Password"
-          name="password"
-          tabindex="2"
-          auto-complete="on"
-          @keyup.enter.native="handleLogin"
-        />
-        <span class="show-pwd" @click="showPwd">
-          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-        </span>
-      </el-form-item>
-
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
-
-      <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
-      </div>
-
-    </el-form>
+      <el-form
+        ref="loginForm"
+        class="login-form"
+        :model="addModel"
+        :rules="rules"
+        size="normal"
+        @keyup.enter.native="onSubmit"
+      >
+        <el-form-item>
+          <span class="login-title">网约车后台管理系统</span>
+        </el-form-item>
+<!--        <el-form-item class="userTypeChooseBtn" prop="userType">-->
+<!--          <el-radio-group v-model="addModel.userType" fill="#9b0d14">-->
+<!--            <el-radio-button label="0">学生</el-radio-button>-->
+<!--            <el-radio-button label="1">教师</el-radio-button>-->
+<!--            <el-radio-button label="2">管理员</el-radio-button>-->
+<!--          </el-radio-group>-->
+<!--        </el-form-item>-->
+        <el-form-item class="my-el-form-item" prop="username">
+          <span class="svg-container">
+            <i class="el-icon-user" />
+          </span>
+          <span class="input-deep">
+            <el-input v-model="addModel.username" placeholder="请输入账号" />
+          </span>
+        </el-form-item>
+        <el-form-item class="my-el-form-item" prop="password">
+          <span class="svg-container">
+            <i class="el-icon-key" />
+          </span>
+          <span class="input-deep">
+            <el-input v-model="addModel.password" type="password" placeholder="请输入密码" />
+          </span>
+        </el-form-item>
+        <el-form-item class="forgetPwdLinkBox">
+          <el-link class="forgetPwdLink" :underline="false" @click="beforeTo">忘记密码?</el-link>
+        </el-form-item>
+        <el-form-item>
+          <el-row :gutter="0">
+            <el-button class="myBtn loginBtn" type="primary" @click="onSubmit">登录</el-button>
+          </el-row>
+        </el-form-item>
+      </el-form>
+      <el-popover
+        class="el-popover-box"
+        placement="bottom"
+        trigger="click"
+        style="opacity: 0.85"
+      >
+        <template #reference>
+          <!--滑动图片弹窗验证-->
+          <PuzzleVerification
+            v-model="isVerificationShow"
+            :puzzle-img-list="puzzleImgList"
+            block-type="puzzle"
+            :on-success="handleSuccess"
+            :on-error="handleError"
+          />
+        </template>
+      </el-popover>
+    </div>
+    <p class="login-copyright">© 2023 LHP 版权所有</p>
   </div>
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
-
+import PuzzleVerification from 'vue-puzzle-verification'
+import ResetPassword from '@/views/login/ResetPassword'
+// import '@/styles/style/theme/index.css'
 export default {
-  name: 'Login',
-  data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
-      } else {
-        callback()
-      }
-    }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
-      } else {
-        callback()
-      }
-    }
-    return {
-      loginForm: {
-        username: 'admin',
-        password: '111111'
-      },
-      loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
-      },
-      loading: false,
-      passwordType: 'password',
-      redirect: undefined
-    }
+  components: {
+    PuzzleVerification,
+    ResetPassword
   },
-  watch: {
-    $route: {
-      handler: function(route) {
-        this.redirect = route.query && route.query.redirect
+  data() {
+    return {
+      addModel: {
+        username: '',
+        password: '',
+        userType: 2
       },
-      immediate: true
+      // 表单验证规则
+      rules: {
+        username: [{
+          trigger: 'change',
+          required: true,
+          message: '请输入账户'
+        }],
+        password: [{
+          trigger: 'change',
+          required: true,
+          message: '请输入密码'
+        }],
+        userType: [{
+          trigger: 'change',
+          required: true,
+          message: '请选择用户类型'
+        }]
+      },
+      isVerificationShow: false,
+      puzzleImgList: [
+        require('../../assets/verify/1.jpg'),
+        require('../../assets/verify/2.jpg'),
+        require('../../assets/verify/3.jpg'),
+        require('../../assets/verify/4.jpg'),
+        require('../../assets/verify/5.jpg'),
+        require('../../assets/verify/6.jpg'),
+        require('../../assets/verify/7.jpg'),
+        require('../../assets/verify/8.jpg'),
+        require('../../assets/verify/9.jpg'),
+        require('../../assets/verify/10.jpg'),
+        require('../../assets/verify/11.jpg'),
+        require('../../assets/verify/12.jpg')
+      ],
+      isInput: false
     }
   },
   methods: {
-    showPwd() {
-      if (this.passwordType === 'password') {
-        this.passwordType = ''
+    beforeTo() {
+      if (this.addModel.username === '') {
+        this.$notify({
+          title: '跳转失败',
+          message: '输入用户名再去重置密码吧',
+          type: 'error',
+          duration: 1500
+        })
       } else {
-        this.passwordType = 'password'
+        this.$router.push({
+          name: 'ResetPassword',
+          query: {
+            username: this.addModel.username
+          }
+        })
       }
-      this.$nextTick(() => {
-        this.$refs.password.focus()
-      })
     },
-    handleLogin() {
+    handleSuccess() {
+      // 验证通过后关闭图片验证
+      this.isVerificationShow = false
+      // 信息提示
+      // this.$message({ type: 'success', message: '验证成功!' })
+      this.login()
+    },
+    handleError() {
+      // 信息提示
+      // this.$message({ type: 'error', message: '验证失败!' })
+    },
+    change() {
+      // 如果监听到输入框发生变化，那么采用用户输入的密码
+      this.isInput = true
+    },
+    // 登录提交
+    onSubmit() {
+      // 表单验证
       this.$refs.loginForm.validate(valid => {
         if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
-        } else {
-          console.log('error submit!!')
-          return false
+          this.isVerificationShow = true
         }
+      })
+    },
+    login() {
+      // 调用 store模块 -> user模块 -> login()方法
+      this.$store.dispatch('user/login', this.addModel).then(() => {
+        // 登录成功,返回数据,不会立即进入首页,需要做权限验证
+        // 权限验证通过,才会进入首页
+        this.$router.push({ path: this.redirect || '/' })
+        this.loading = false
       })
     }
   }
 }
 </script>
 
-<style lang="scss">
-/* 修复input 背景不协调 和光标变色 */
-/* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
-
-$bg:#283443;
-$light_gray:#fff;
-$cursor: #fff;
-
-@supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
-  .login-container .el-input input {
-    color: $cursor;
-  }
-}
-
-/* reset element-ui css */
+<style scoped>
+/* 登录界面总体 */
 .login-container {
-  .el-input {
-    display: inline-block;
-    height: 47px;
-    width: 85%;
-
-    input {
-      background: transparent;
-      border: 0px;
-      -webkit-appearance: none;
-      border-radius: 0px;
-      padding: 12px 5px 12px 15px;
-      color: $light_gray;
-      height: 47px;
-      caret-color: $cursor;
-
-      &:-webkit-autofill {
-        box-shadow: 0 0 0px 1000px $bg inset !important;
-        -webkit-text-fill-color: $cursor !important;
-      }
-    }
-  }
-
-  .el-form-item {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    color: #454545;
-  }
-}
-</style>
-
-<style lang="scss" scoped>
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
-
-.login-container {
-  min-height: 100%;
+  display: flex;
+  height: 100%;
   width: 100%;
-  background-color: $bg;
+  /* 设置背景颜色，背景图加载过程中会显示背景色 */
+  /* 让背景图基于容器大小伸缩 */
+  /* 当内容高度大于图片高度时，背景图像的位置相对于viewport固定 */
+  background: #464646 url("../../assets/login_bg.jpg") no-repeat fixed center center;
+  background-size: cover;
   overflow: hidden;
+}
 
-  .login-form {
-    position: relative;
-    width: 520px;
-    max-width: 100%;
-    padding: 160px 35px 0;
-    margin: 0 auto;
-    overflow: hidden;
-  }
+/* 登录界面logo */
+.logo {
+  float: left;
+  margin-left: 50px;
+  width: 100%;
+  height: 148px;
+}
 
-  .tips {
-    font-size: 14px;
-    color: #fff;
-    margin-bottom: 10px;
+.logo .sdu-logo {
+  float: left;
+  margin: 0;
+  width: 243px;
+  height: 148px;
+  background: url(/logo-sdu.png) no-repeat 0 0;
+  background-size: 100%;
+}
 
-    span {
-      &:first-of-type {
-        margin-right: 16px;
-      }
-    }
-  }
+.logo .line {
+  height: 58px;
+  border-left: 1px solid #fff;
+  float: left;
+  width: 20px;
+  margin: 48px 0 0 0px;
+}
 
-  .svg-container {
-    padding: 6px 5px 6px 15px;
-    color: $dark_gray;
-    vertical-align: middle;
-    width: 30px;
-    display: inline-block;
-  }
+.logo .title {
+  float: left;
+  font-size: 28px;
+  color: #fff;
+  margin-top: 60px;
+}
 
-  .title-container {
-    position: relative;
+/* 表单大盒子 */
+.main-box {
+  position: absolute;
+  right: 120px;
+  top: 280px;
+  float: right;
+  min-width: 760px;
+  height: 420px;
+}
 
-    .title {
-      font-size: 26px;
-      color: $light_gray;
-      margin: 0px auto 40px auto;
-      text-align: center;
-      font-weight: bold;
-    }
-  }
+/* 人机验证 */
+.el-popover-box {
+  float: right;
+  margin: 90px 0 0 10px;
+  top: 500px;
+  right: 500px;
+  margin-right: 20px;
+  /*background-color: rgba(255,255,255,.8);*/
+}
 
-  .show-pwd {
+/* 登录表单总样式 */
+.login-form {
+  float: right;
+  right: 160px;
+  top: 240px;
+  height: 410px;
+  width: 450px;
+  background: rgb(255, 255, 255, .8);
+  padding: 40px 35px 0;
+  border-radius: 25px;
+  /* 阴影 左右 上下 虚实 颜色 */
+  box-shadow: 5px 5px 25px #797979;
+  overflow: hidden;
+}
+
+/* 表单标题 */
+.login-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #9b0d14;
+}
+
+/*.userTypeChooseBtn {*/
+/*  display: flex;*/
+/*  justify-content: center;*/
+/*  align-items: center;*/
+/*}*/
+
+/* 更改角色选择器按钮颜色 */
+/*.userTypeChooseBtn >>> .el-radio-button__inner:hover {*/
+/*  color: #9b0d14;*/
+/*}*/
+
+/*.userTypeChooseBtn >>> .el-radio-button__orig-radio:checked + .el-radio-button__inner:hover {*/
+/*  color: #fff;*/
+/*}*/
+
+/* 输入框整体 */
+.my-el-form-item {
+  padding: 0 14px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, .2);
+  border-radius: 5px;
+}
+
+.my-el-form-item:hover {
+  border: 1px solid #9b0d14;
+}
+
+.el-input {
+  display: inline-block;
+  width: 90%;
+}
+
+.input-deep >>> .el-input__inner {
+  border: 0; /* 取消输入框边框 */
+}
+
+/* 图标 */
+.svg-container i {
+  display: inline-block;
+  width: 5%;
+  font-weight: 700;
+  color: #363232FF;
+}
+
+/* 忘记密码 */
+.forgetPwdLinkBox {
+  margin: -15px 0 10px 0;
+}
+
+.forgetPwdLink {
+  margin-left: 250px;
+}
+
+.forgetPwdLink:hover {
+  color: #9b0d14;
+}
+
+/* 表单按钮 */
+.myBtn {
+  width: 100%;
+}
+
+.loginBtn {
+  border: 1px solid #B00817FF;
+  background-color: #9b0d14;
+}
+
+.loginBtn:hover {
+  border: 1px solid #9b0d14;
+  background-color: #b00817;
+}
+
+/*.registerBtn {*/
+/*  color: #9b0d14;*/
+/*  border: 1px solid #B00817FF;*/
+/*  background-color: #fff;*/
+/*}*/
+
+/*.registerBtn:hover {*/
+/*  color: #ffffff;*/
+/*  border: 1px solid #9b0d14;*/
+/*  background-color: #b00817;*/
+/*}*/
+
+.login-copyright {
+  color: #eee;
+  padding-bottom: 20px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+@media screen and (min-height: 550px) {
+  .login-copyright {
     position: absolute;
-    right: 10px;
-    top: 7px;
-    font-size: 16px;
-    color: $dark_gray;
-    cursor: pointer;
-    user-select: none;
+    bottom: 0;
+    right: 0;
+    left: 0;
   }
 }
 </style>

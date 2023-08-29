@@ -16,7 +16,7 @@ module.exports = {
 
   /**
    * @type {boolean} true | false
-   * @description Whether show the tagsView (面包屑下方标签) // TODO：为啥不显示？
+   * @description Whether show the tagsView (面包屑下方标签)
    */
   tagsView: true
 }

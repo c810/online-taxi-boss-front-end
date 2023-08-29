@@ -3,7 +3,8 @@
     <transition-group name="breadcrumb">
       <el-breadcrumb-item v-for="(item,index) in levelList" :key="item.path">
         <span v-if="item.redirect==='noRedirect'||index==levelList.length-1" class="no-redirect">{{ item.meta.title }}</span>
-        <a v-else @click.prevent="handleLink(item)">{{ item.meta.title }}</a>
+        <!-- 面包屑除最后一个以外的颜色 -->
+        <a style="color: #ffffff;" v-else @click.prevent="handleLink(item)">{{ item.meta.title }}</a>
       </el-breadcrumb-item>
     </transition-group>
   </el-breadcrumb>
@@ -33,6 +34,7 @@ export default {
       const first = matched[0]
 
       if (!this.isDashboard(first)) {
+        // 面包屑标题 第一个"首页"标签
         matched = [{ path: '/dashboard', meta: { title: '首页' }}].concat(matched)
       }
 
@@ -71,7 +73,7 @@ export default {
   margin-left: 8px;
 
   .no-redirect {
-    color: #97a8be;
+    color: #fff; // 面包屑最后一个不可点击的颜色
     cursor: text;
   }
 }

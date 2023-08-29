@@ -13,7 +13,8 @@
         :collapse-transition="false"
         mode="vertical"
       >
-        <sidebar-item v-for="route in permission_routes" :key="route.path" :item="route" :base-path="route.path" />
+<!--        <sidebar-item v-for="route in permission_routes" :key="route.path" :item="route" :base-path="route.path" />-->
+        <sidebar-item v-for="route in permission_routes" :key="generateUniqueId(route)" :item="route" :base-path="route.path" />
       </el-menu>
     </el-scrollbar>
   </div>
@@ -24,6 +25,7 @@ import { mapGetters } from 'vuex'
 import Logo from './Logo'
 import SidebarItem from './SidebarItem'
 import variables from '@/styles/variables.scss'
+import { v4 as uuidv4 } from 'uuid'
 
 export default {
   components: { SidebarItem, Logo },
@@ -49,6 +51,12 @@ export default {
     },
     isCollapse() {
       return !this.sidebar.opened
+    }
+  },
+  methods: {
+    generateUniqueId(route) {
+      // 使用 UUID 生成唯一标识符
+      return uuidv4()
     }
   }
 }
