@@ -24,6 +24,12 @@
           <el-tag v-if="scope.row.driverGender === 2" type="danger" size="small">女</el-tag>
         </template>
       </el-table-column>
+      <el-table-column prop="vehicleNo" label="绑定车辆">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.vehicleNo && (scope.row.bindingState === '1')" type="success">{{scope.row.vehicleNo}}</el-tag>
+          <el-tag v-if="!scope.row.vehicleNo || (scope.row.bindingState === '2')" type="danger">未绑定</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="address" label="邮政编码"/>
       <el-table-column prop="driverBirthday" label="出生日期"/>
       <el-table-column prop="driverNation" label="民族"/>
@@ -61,10 +67,12 @@
           <el-tag v-if="scope.row.state === 1" type="danger" size="small">失效</el-tag>
         </template>
       </el-table-column>
-      <el-table-column v-if="$checkPermission(['sys:driverList:edit','sys:driverList:delete'])" label="操作" align="center" width="200" fixed="right">
+      <el-table-column v-if="$checkPermission(['sys:driverList:edit','sys:driverList:delete'])" label="操作" align="center" width="313" fixed="right">
         <template slot-scope="scope">
           <el-button v-permission="['sys:driverList:edit']" type="primary" icon="el-icon-edit" size="small" @click="editBtn(scope.row)">编辑</el-button>
           <el-button v-permission="['sys:driverList:delete']" type="danger" icon="el-icon-delete" size="small" @click="deleteBtn(scope.row)">删除</el-button>
+          <el-button v-permission="['sys:driverList:bind']" type="success" icon="el-icon-lock" size="small" @click="bindBtn(scope.row)" v-if="!scope.row.vehicleNo || (scope.row.bindingState === '2')">绑定车辆</el-button>
+          <el-button v-permission="['sys:driverList:unbind']" type="warning" icon="el-icon-unlock" size="small" @click="unbindBtn(scope.row)" v-if="scope.row.vehicleNo && (scope.row.bindingState === '1')">解绑车辆</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -365,11 +373,49 @@
         </el-form>
       </div>
     </sys-dialog>
+    <sys-dialog
+      :title="addDialog2.title"
+      :height="addDialog2.height"
+      :width="addDialog2.width"
+      :visible="addDialog2.visible"
+      @onClose="onClose2"
+      @onConfirm="onConfirm2"
+    >
+      <div slot="content">
+        <el-form
+          id="el-form"
+          ref="addForm2"
+          :model="addModel2"
+          label-width="80px"
+          :inline="false"
+          size="small"
+        >
+          <el-row>
+            <el-col :span="24" :offset="0">
+              <el-form-item prop="carId" :rules="Rules.select" label="车辆">
+                <el-select
+                  v-model="addModel2.carId"
+                  placeholder="请选择要绑定的车辆"
+                >
+                  <el-option
+                    v-for="item in carList"
+                    :key="item.id"
+                    :label="item.vehicleNo"
+                    :value="item.id"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </div>
+    </sys-dialog>
   </el-main>
 </template>
 
 <script>
-import { addApi, listApi, editApi, deleteApi } from '@/api/driver'
+import { addApi, listApi, editApi, deleteApi, bindApi, unbindApi } from '@/api/driver'
+import { listApi as carListApi } from '@/api/car'
 import SysDialog from '@/components/Dialog/SysDialog.vue'
 import Rules from '@/utils/rules'
 
@@ -408,11 +454,22 @@ export default {
         contractOff: '',
         state: 0
       },
+      addModel2: {
+        driverId: '',
+        carId: '',
+        bindingState: 1
+      },
       // 弹框属性
       addDialog: {
         title: '',
         height: 610,
         width: 1120,
+        visible: false
+      },
+      addDialog2: {
+        title: '绑定车辆',
+        height: 90,
+        width: 680,
         visible: false
       },
       searchModel: {
@@ -422,7 +479,8 @@ export default {
         driverPhone: ''
         // total: 0
       },
-      tableList: []
+      tableList: [],
+      carList: []
     }
   },
   created() {
@@ -433,6 +491,32 @@ export default {
     window.addEventListener('resize', this.getList)
   },
   methods: {
+    async bindBtn(row) {
+      // 清空表单
+      this.$resetForm('addForm2', this.addModel2)
+      // 获取角色列表
+      const res = await carListApi({})
+      if (res && res.code === 200) {
+        this.carList = res.data
+      }
+      this.addModel2.driverId = row.id
+      // 设置弹框属性
+      this.addDialog2.visible = true
+    },
+    async unbindBtn(row) {
+      const confirm = await this.$myConfirm('确定解绑车辆吗?')
+      if (confirm) {
+        const res = await unbindApi({
+          driverId: row.id,
+          carId: row.carId
+        })
+        if (res && res.code === 200) {
+          // 信息提示
+          this.$message.success(res.msg)
+          this.getList()
+        }
+      }
+    },
     /* currentChange(val) {
       this.searchModel.currentPage = val
       this.getList()
@@ -501,8 +585,24 @@ export default {
         }
       })
     },
+    onConfirm2() {
+      this.$refs.addForm2.validate(async valid => {
+        if (valid) {
+          const res = await bindApi(this.addModel2)
+          if (res && res.code === 200) {
+            // 信息提示
+            this.$message.success(res.msg)
+            this.getList()
+            this.addDialog2.visible = false
+          }
+        }
+      })
+    },
     onClose() {
       this.addDialog.visible = false
+    },
+    onClose2() {
+      this.addDialog2.visible = false
     },
     async addBtn() {
       // 清空表单

@@ -15,3 +15,11 @@ export const editApi = async(para) => {
 export const deleteApi = async(para) => {
   return await http.delete('/driver-user', para)
 }
+// 绑定
+export const bindApi = async(para) => {
+  return await http.post('/driver-car-binding-relationship/bind', para)
+}
+// 解绑
+export const unbindApi = async(para) => {
+  return await http.post('/driver-car-binding-relationship/unbind', para)
+}
