@@ -56,6 +56,11 @@ import PuzzleVerification from 'vue-puzzle-verification'
 
 Vue.use(PuzzleVerification)
 
+// 使用封装的表格宽度自适应插件
+import Plugin from 'v-fit-columns'
+
+Vue.use(Plugin)
+
 // md5加密密码
 import md5 from 'js-md5'
 
