@@ -61,11 +61,9 @@
           <el-tag v-if="scope.row.state === 1" type="danger" size="small">失效</el-tag>
         </template>
       </el-table-column>
-      <el-table-column v-if="$checkPermission(['sys:driverList:edit','sys:driverList:delete','sys:driverList:reset'])" label="操作" align="center" width="200" fixed="right">
+      <el-table-column v-if="$checkPermission(['sys:driverList:edit','sys:driverList:delete'])" label="操作" align="center" width="200" fixed="right">
         <template slot-scope="scope">
           <el-button v-permission="['sys:driverList:edit']" type="primary" icon="el-icon-edit" size="small" @click="editBtn(scope.row)">编辑</el-button>
-<!--          <el-button v-permission="['sys:driverList:reset']" type="warning" size="small" icon="el-icon-delete" @click="resetPwdBtn(scope.row)">重置密码-->
-<!--          </el-button>-->
           <el-button v-permission="['sys:driverList:delete']" type="danger" icon="el-icon-delete" size="small" @click="deleteBtn(scope.row)">删除</el-button>
         </template>
       </el-table-column>
