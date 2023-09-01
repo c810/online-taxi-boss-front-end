@@ -3,37 +3,36 @@
     <!-- 搜索栏 -->
     <el-form :model="searchModel" :inline="true" size="small">
       <el-form-item>
-        <el-input v-model="searchModel.passengerName" placeholder="请输入乘客姓名"/>
+        <el-input v-model="searchModel.cityCode" placeholder="请输入城市代码"/>
       </el-form-item>
       <el-form-item>
-        <el-input v-model="searchModel.passengerPhone" placeholder="请输入乘客手机号"/>
+        <el-input v-model="searchModel.vehicleType" placeholder="请输入车辆类型"/>
       </el-form-item>
       <el-form-item>
         <el-button icon="el-icon-search" @click="searchBtn">搜索</el-button>
         <el-button style="color:#FF7670;border-color: #FF7670;" icon="el-icon-close" @click="resetBtn">重置</el-button>
-        <el-button v-permission="['sys:passengerList:add']" icon="el-icon-plus" type="primary" @click="addBtn">新增</el-button>
+        <el-button v-permission="['sys:priceRuleList:add']" icon="el-icon-plus" type="primary" @click="addBtn">新增</el-button>
       </el-form-item>
     </el-form>
     <!-- 表格 -->
     <el-table :data="tableList" border stripe>
-      <el-table-column prop="passengerName" label="姓名"/>
-      <el-table-column prop="passengerPhone" label="手机号"/>
-      <el-table-column prop="passengerGender" label="性别">
+      <el-table-column prop="cityCode" label="城市代码"/>
+      <el-table-column prop="vehicleType" label="车辆类型">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.passengerGender === 1" type="blue" size="small">男</el-tag>
-          <el-tag v-if="scope.row.passengerGender === 2" type="danger" size="small">女</el-tag>
+          <el-tag v-if="scope.row.vehicleType === '1'" type="blue" size="small">经济型</el-tag>
+          <el-tag v-if="scope.row.vehicleType === '2'" type="success" size="small">商务型</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="state" label="乘客状态">
+      <el-table-column prop="startFare" label="起步价"/>
+      <el-table-column prop="startMile" label="起步距离"/>
+      <el-table-column prop="unitPricePerMile" label="每公里单价"/>
+      <el-table-column prop="unitPricePerMinute" label="每分钟单价"/>
+      <el-table-column prop="fareVersion" label="计价规则版本"/>
+      <el-table-column prop="fareType" label="计价规则"/>
+      <el-table-column v-if="$checkPermission(['sys:priceRuleList:edit','sys:priceRuleList:delete'])" label="操作" align="center" width="200" fixed="right">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.state === 0" type="blue" size="small">有效</el-tag>
-          <el-tag v-if="scope.row.state === 1" type="danger" size="small">失效</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="$checkPermission(['sys:passengerList:edit','sys:passengerList:delete'])" label="操作" align="center" width="200" fixed="right">
-        <template slot-scope="scope">
-          <el-button v-permission="['sys:passengerList:edit']" type="primary" icon="el-icon-edit" size="small" @click="editBtn(scope.row)">编辑</el-button>
-          <el-button v-permission="['sys:passengerList:delete']" type="danger" icon="el-icon-delete" size="small" @click="deleteBtn(scope.row)">删除</el-button>
+          <el-button v-permission="['sys:priceRuleList:edit']" type="primary" icon="el-icon-edit" size="small" @click="editBtn(scope.row)">编辑</el-button>
+          <el-button v-permission="['sys:priceRuleList:delete']" type="danger" icon="el-icon-delete" size="small" @click="deleteBtn(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -69,32 +68,42 @@
           <!-- 第一行 -->
           <el-row>
             <el-col :span="12" :offset="0">
-              <el-form-item prop="passengerName" :rules="Rules.isNull" label="姓名">
-                <el-input v-model="addModel.passengerName"/>
+              <el-form-item prop="cityCode" :rules="Rules.interNum" label="城市代码">
+                <el-input v-model="addModel.cityCode"/>
               </el-form-item>
             </el-col>
             <el-col :span="12" :offset="0">
-              <el-form-item prop="passengerPhone" :rules="Rules.phone" label="手机号">
-                <el-input v-model="addModel.passengerPhone"/>
+              <el-form-item prop="vehicleType" :rules="Rules.sex" label="车辆类型">
+                <el-radio-group v-model="addModel.vehicleType">
+                  <el-radio :label="'1'">经济型</el-radio>
+                  <el-radio :label="'2'">商务型</el-radio>
+                </el-radio-group>
               </el-form-item>
             </el-col>
           </el-row>
           <!-- 第二行 -->
           <el-row>
             <el-col :span="12" :offset="0">
-              <el-form-item prop="passengerGender" :rules="Rules.sex" label="性别">
-                <el-radio-group v-model="addModel.passengerGender">
-                  <el-radio :label="1">男</el-radio>
-                  <el-radio :label="2">女</el-radio>
-                </el-radio-group>
+              <el-form-item prop="startFare" :rules="Rules.money" label="起步价">
+                <el-input v-model="addModel.startFare"/>
               </el-form-item>
             </el-col>
             <el-col :span="12" :offset="0">
-              <el-form-item prop="state" :rules="Rules.radio" label="乘客状态">
-                <el-radio-group v-model="addModel.state">
-                  <el-radio :label="0">有效</el-radio>
-                  <el-radio :label="1">失效</el-radio>
-                </el-radio-group>
+              <el-form-item prop="startMile" :rules="Rules.interNum" label="起步距离">
+                <el-input v-model="addModel.startMile"/>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <!-- 第三行 -->
+          <el-row>
+            <el-col :span="12" :offset="0">
+              <el-form-item prop="unitPricePerMile" :rules="Rules.money" label="每公里单价">
+                <el-input v-model="addModel.unitPricePerMile"/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12" :offset="0">
+              <el-form-item prop="unitPricePerMinute" :rules="Rules.money" label="每分钟单价">
+                <el-input v-model="addModel.unitPricePerMinute"/>
               </el-form-item>
             </el-col>
           </el-row>
@@ -105,7 +114,7 @@
 </template>
 
 <script>
-import { addApi, listApi, editApi, deleteApi } from '@/api/passenger'
+import { addApi, listApi, editApi, deleteApi } from '@/api/price'
 import SysDialog from '@/components/Dialog/SysDialog.vue'
 import Rules from '@/utils/rules'
 
@@ -118,24 +127,25 @@ export default {
       // tableHeight: 0,
       Rules,
       addModel: {
-        id: '',
-        passengerName: '',
-        passengerPhone: '',
-        passengerGender: '',
-        state: 0
+        cityCode: '',
+        vehicleType: '',
+        startFare: 10.00,
+        startMile: 3,
+        unitPricePerMile: 2.00,
+        unitPricePerMinute: 2.00
       },
       // 弹框属性
       addDialog: {
         title: '',
         height: 210,
-        width: 640,
+        width: 840,
         visible: false
       },
       searchModel: {
         // currentPage: 1,
         // pageSize: 10,
-        passengerName: '',
-        passengerPhone: ''
+        cityCode: '',
+        vehicleType: ''
         // total: 0
       },
       tableList: []
@@ -157,7 +167,8 @@ export default {
       const confirm = await this.$myConfirm('确定删除该数据吗?')
       if (confirm) {
         const res = await deleteApi({
-          passengerId: row.id
+          fareType: row.fareType,
+          fareVersion: row.fareVersion
         })
         if (res && res.code === 200) {
           // 信息提示
@@ -170,9 +181,8 @@ export default {
       // 清空表单
       this.$resetForm('addForm', this.addModel)
       this.$objCopy(row, this.addModel)
-      this.addModel.id = row.id
       // 设置弹框属性
-      this.addDialog.title = '编辑乘客信息'
+      this.addDialog.title = '编辑计价规则'
       this.addDialog.visible = true
       this.addModel.type = '1'
     },
@@ -210,13 +220,13 @@ export default {
       // 清空表单
       this.$resetForm('addForm', this.addModel)
       // 设置弹框属性
-      this.addDialog.title = '新增乘客'
+      this.addDialog.title = '新增计价规则'
       this.addDialog.visible = true
       this.addModel.type = '0'
     },
     resetBtn() {
-      this.searchModel.passengerName = ''
-      this.searchModel.passengerPhone = ''
+      this.searchModel.cityCode = ''
+      this.searchModel.vehicleType = ''
       this.getList()
     },
     searchBtn() {
@@ -232,12 +242,12 @@ export default {
   color: #fff;
 }
 
-/*#el-form >>> .el-form-item__label {*/
-/*  text-align: right;*/
-/*  min-width: 170px;*/
-/*}*/
-/*#el-form >>> .el-input {*/
-/*  width: 360px;*/
-/*}*/
+#el-form >>> .el-form-item__label {
+  text-align: right;
+  min-width: 100px;
+}
+#el-form >>> .el-input {
+  width: 280px;
+}
 
 </style>
