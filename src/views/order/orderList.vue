@@ -16,6 +16,7 @@
     </el-form>
     <!-- 表格 -->
     <el-table v-fit-columns :data="tableList" border stripe>
+      <el-table-column prop="id" label="订单号"/>
       <el-table-column prop="passengerId" label="乘客ID"/>
       <el-table-column prop="passengerPhone" label="乘客手机号"/>
       <el-table-column prop="driverId" label="司机ID"/>
