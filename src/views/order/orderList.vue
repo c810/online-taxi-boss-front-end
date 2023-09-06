@@ -3,6 +3,9 @@
     <!-- 搜索栏 -->
     <el-form :model="searchModel" :inline="true" size="small">
       <el-form-item>
+        <el-input v-model="searchModel.id" placeholder="请输入订单号"/>
+      </el-form-item>
+      <el-form-item>
         <el-input v-model="searchModel.passengerPhone" placeholder="请输入乘客手机号"/>
       </el-form-item>
       <el-form-item>
@@ -15,7 +18,7 @@
       </el-form-item>
     </el-form>
     <!-- 表格 -->
-    <el-table v-fit-columns :data="tableList" border stripe>
+    <el-table :height="tableHeight" v-fit-columns :data="tableList" border stripe>
       <el-table-column prop="id" label="订单号"/>
       <el-table-column prop="passengerId" label="乘客ID"/>
       <el-table-column prop="passengerPhone" label="乘客手机号"/>
@@ -25,8 +28,8 @@
       <el-table-column prop="address" label="发起地行政区划代码"/>
       <el-table-column prop="vehicleType" label="车辆类型">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.vehicleType === '1'" type="blue" size="small">经济型</el-tag>
-          <el-tag v-if="scope.row.vehicleType === '2'" type="success" size="small">商务型</el-tag>
+          <el-tag v-if="scope.row.vehicleType === '1'" type="success" size="small">经济型</el-tag>
+          <el-tag v-if="scope.row.vehicleType === '2'" type="blue" size="small">商务型</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="orderTime" label="订单发起时间"/>
@@ -37,13 +40,13 @@
       <el-table-column prop="destination" label="预计目的地"/>
       <el-table-column prop="destLongitude" label="预计目的地经度"/>
       <el-table-column prop="destLatitude" label="预计目的地纬度"/>
-      <el-table-column prop="encrypt" label="车辆类型">
+      <el-table-column prop="encrypt" label="坐标加密标识">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.encrypt === '1'" type="success" size="small">GCJ-02测绘局标准</el-tag>
-          <el-tag v-if="scope.row.encrypt === '2'" type="success" size="small">WGS84 GPS标准</el-tag>
-          <el-tag v-if="scope.row.encrypt === '3'" type="success" size="small">BD-09 百度标准</el-tag>
-          <el-tag v-if="scope.row.encrypt === '4'" type="success" size="small">CGCS2000 北斗标准</el-tag>
-          <el-tag v-if="scope.row.encrypt === '0'" type="success" size="small">其他</el-tag>
+          <el-tag v-if="scope.row.encrypt === 1" type="success" size="small">GCJ-02测绘局标准</el-tag>
+          <el-tag v-if="scope.row.encrypt === 2" type="success" size="small">WGS84 GPS标准</el-tag>
+          <el-tag v-if="scope.row.encrypt === 3" type="success" size="small">BD-09 百度标准</el-tag>
+          <el-tag v-if="scope.row.encrypt === 4" type="success" size="small">CGCS2000 北斗标准</el-tag>
+          <el-tag v-if="scope.row.encrypt === 0" type="success" size="small">其他</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="fareType" label="运价类型编码"/>
@@ -450,7 +453,7 @@ export default {
   // },
   data() {
     return {
-      // tableHeight: 0,
+      tableHeight: 0,
       // Rules,
       /*addModel: {
         id: '',
@@ -506,6 +509,7 @@ export default {
       searchModel: {
         // currentPage: 1,
         // pageSize: 10,
+        id: '',
         passengerPhone: '',
         driverPhone: ''
         // total: 0
@@ -519,6 +523,10 @@ export default {
   mounted() {
     this.getList()
     window.addEventListener('resize', this.getList)
+    // 计算表格的高度(目前不能随窗口大小调整)
+    this.$nextTick(() => {
+      this.tableHeight = window.innerHeight - 180
+    })
   },
   methods: {
     /* currentChange(val) {
@@ -590,6 +598,7 @@ export default {
       this.addModel.type = '0'
     },*/
     resetBtn() {
+      this.searchModel.id = ''
       this.searchModel.passengerPhone = ''
       this.searchModel.driverPhone = ''
       this.getList()

@@ -110,16 +110,7 @@ export default {
       puzzleImgList: [
         require('../../assets/verify/1.jpg'),
         require('../../assets/verify/2.jpg'),
-        require('../../assets/verify/3.jpg'),
-        require('../../assets/verify/4.jpg'),
-        require('../../assets/verify/5.jpg'),
-        require('../../assets/verify/6.jpg'),
-        require('../../assets/verify/7.jpg'),
-        require('../../assets/verify/8.jpg'),
-        require('../../assets/verify/9.jpg'),
-        require('../../assets/verify/10.jpg'),
-        require('../../assets/verify/11.jpg'),
-        require('../../assets/verify/12.jpg')
+        require('../../assets/verify/3.jpg')
       ],
       isInput: false
     }
@@ -232,7 +223,7 @@ export default {
   top: 280px;
   float: right;
   min-width: 760px;
-  height: 420px;
+  height: 320px;
 }
 
 /* 人机验证 */
@@ -250,7 +241,7 @@ export default {
   float: right;
   right: 160px;
   top: 240px;
-  height: 410px;
+  height: 350px;
   width: 450px;
   background: rgb(255, 255, 255, .8);
   padding: 40px 35px 0;

@@ -263,7 +263,7 @@ export default {
 
 <style scoped>
 .resetPassword {
-  background-image: url("../../assets/verify/5.jpg");
+  background-image: url("../../assets/verify/3.jpg");
   background-position: center;
   height: 100%;
   width: 100%;

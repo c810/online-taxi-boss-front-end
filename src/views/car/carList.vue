@@ -31,8 +31,12 @@
       <el-table-column prop="seats" label="核定载客位"/>
       <el-table-column prop="brand" label="车辆厂牌"/>
       <el-table-column prop="model" label="车辆型号"/>
-      <el-table-column prop="vehicleType" label="车辆类型"/>
-
+      <el-table-column prop="vehicleType" label="车辆类型">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.vehicleType === '1'" type="success" size="small">经济型</el-tag>
+          <el-tag v-if="scope.row.vehicleType === '2'" type="blue" size="small">商务型</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="ownerName" label="车辆所有人"/>
       <el-table-column prop="vehicleColor" label="车身颜色">
         <template slot-scope="scope">
